@@ -32,10 +32,6 @@ jobs:
         java-version: 17
         cache: 'gradle'
         
-    - name: Patch Gradle Repositories
-      run:
-        sed -ni '/https:\/\/maven.aliyun.com\/repository\/public/{h;n;/https:\/\/repo1.maven.org\/maven2/!{:a;N;/https:\/\/maven.aliyun.com\/repository\/public/!ba;x;H;n};x;H;x};p' repositories
-
     - name: Build Dev
       uses: gradle/gradle-build-action@v2
       with:
