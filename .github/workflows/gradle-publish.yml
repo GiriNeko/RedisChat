@@ -20,20 +20,31 @@ jobs:
       packages: write
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
+    - name: 'Checkout'
+      uses: actions/checkout@v3
       with:
-        java-version: '17'
+        fetch-depth: 2
+        
+    - name: Setup JDK 17
+      uses: actions/setup-java@v3
+      with:
         distribution: 'temurin'
-        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-        settings-path: ${{ github.workspace }} # location for the settings.xml file
+        java-version: 17
+        cache: 'gradle'
+        
+    - name: Patch Gradle Repositories
+      run:
+        sed -ni '/https:\/\/maven.aliyun.com\/repository\/public/{h;n;/https:\/\/repo1.maven.org\/maven2/!{:a;N;/https:\/\/maven.aliyun.com\/repository\/public/!ba;x;H;n};x;H;x};p' repositories
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
-
-    - name: Build with Gradle
-      run: chmod +x ./* && ./gradlew build
+    - name: Build Dev
+      uses: gradle/gradle-build-action@v2
+      with:
+        gradle-version: current
+        arguments: ShadowJar
+    - name: Cleanup Gradle Cache
+      run: |
+        rm -f ~/.gradle/caches/modules-2/modules-2.lock
+        rm -f ~/.gradle/caches/modules-2/gc.properties
 
     # The USERNAME and TOKEN need to correspond to the credentials environment variables used in
     # the publishing section of your build.gradle
